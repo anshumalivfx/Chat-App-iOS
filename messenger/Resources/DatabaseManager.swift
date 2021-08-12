@@ -14,6 +14,11 @@ final class DatabaseManager {
    static let shared = DatabaseManager()
     private let database = Database.database().reference()
     
+    static func safeEmail(emailAddress: String) -> String {
+        let safeEmail = emailAddress.replacingOccurrences(of: ".", with: "dot")
+        safeEmail.replacingOccurrences(of: "@", with: "-at-")
+        return safeEmail
+    }
     
 }
 
@@ -38,11 +43,56 @@ extension DatabaseManager {
         
     }
     
-    public func insertUser(with user: ChatAppUser){
+    public func insertUser(with user: ChatAppUser, completion: @escaping (Bool) -> Void){
         database.child(user.safeEmail).setValue([
             "first_name": user.firstName,
             "last_name": user.lastName
-        ])
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else {
+                print("Failed to write to Database")
+                completion(false)
+                return
+            }
+            
+            self.database.child("users").observeSingleEvent(of: .value, with: { snapshot in
+                if var usersCollection = snapshot.value as? [[String: String]] {
+                    ///append to user dictionary
+                    let newElement =
+                        [
+                            "name": user.firstName + " " + user.lastName,
+                            "email": user.emailAddress
+                        ]
+                    
+                    usersCollection.append(newElement)
+                    
+                    self.database.child("users").setValue(usersCollection, withCompletionBlock: { error, _ in
+                        guard error == nil else {
+                            completion(false)
+                            return
+                        }
+                        completion(true)
+                    })
+                }
+                else {
+                    ///create that array
+                    let newCollection : [[String: String]] = [
+                        [
+                            "name": user.firstName + " " + user.lastName,
+                            "email": user.emailAddress
+                        ]
+                    ]
+                    self.database.child("users").setValue(newCollection, withCompletionBlock: { error, _ in
+                        guard error == nil else {
+                            completion(false)
+                            return
+                        }
+                        completion(true)
+                    })
+                }
+            })
+            
+            
+        })
     }
 }
 
@@ -56,5 +106,7 @@ struct ChatAppUser {
         safeEmail.replacingOccurrences(of: "@", with: "-at-")
         return safeEmail
     }
-//    let profilePicture: String
+    var profilePictureFileName: String {
+        return "\(safeEmail)_profile_picture.png"
+    }
 }
