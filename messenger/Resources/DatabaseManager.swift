@@ -94,7 +94,48 @@ extension DatabaseManager {
             
         })
     }
+    public func getAllUsers(completion: @escaping (Result<[[String: String]], Error>) -> Void) {
+        database.child("users").observeSingleEvent(of: .value, with: {snapshot in
+            guard let value = snapshot.value as? [[String: String]] else {
+                completion(.failure(DatabaseErrors.failedToFetch))
+                return
+            }
+            completion(.success(value))
+        })
+    }
+    public enum DatabaseErrors: Error {
+        case failedToFetch
+    }
 }
+
+
+// Sending Messages / Conversation
+extension DatabaseManager {
+    
+    
+    /// create a new conversations
+    public func createNewConversation(with otherUserEmail: String, firstMessage: Message, completion: @escaping (Bool) -> Void){
+        
+    }
+    /// fetching all conversations
+    public func getAllConversations(for email: String, completion: @escaping (Result<String, Error>) -> Void) {
+        
+    }
+    /// Get All messages of given converstion
+    public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<String, Error>) -> Void) {
+        
+    }
+    
+    
+    /// Sends a message with target conversation and message
+    public func sendMessage(to conversation: String, message: Message, completion: @escaping (Bool) -> Void){
+        
+    }
+    
+}
+
+
+
 
 struct ChatAppUser {
     let firstName: String
