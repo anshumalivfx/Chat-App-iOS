@@ -147,8 +147,12 @@ class LoginViewController: UIViewController {
             
             let user = result.user
             
-            UserDefaults.standard.set(email, forKey: "email")
+            let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
             
+            
+            UserDefaults.standard.set(email, forKey: "email")
+            UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+
             print("logged in user: \(user)")
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })
@@ -221,6 +225,8 @@ extension LoginViewController: LoginButtonDelegate {
                 return
             }
             UserDefaults.standard.set(email, forKey: "email")
+            UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+
             
             let credential = FacebookAuthProvider.credential(withAccessToken: token)
             
