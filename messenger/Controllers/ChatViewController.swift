@@ -17,6 +17,7 @@ struct Message : MessageType {
    public var kind: MessageKind
 }
 
+
 extension MessageKind {
     var messageKindString: String {
         switch self {
